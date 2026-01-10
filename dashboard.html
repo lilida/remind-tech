@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – ReMind</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .priority-dot-high { background-color: #ef4444; } /* Red */
+    .priority-dot-medium { background-color: #f59e0b; } /* Amber */
+    .priority-dot-low { background-color: #10b981; } /* Green */
+    .hidden-form { display: none; } 
+    .completed-task { opacity: 0.5; text-decoration: line-through; transition: all 0.3s ease; }
+    
+    /* Animation for the Completed Stats Card */
+    @keyframes pulse-green {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .stat-pulse-success {
+      animation: pulse-green 0.6s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-slate-900 font-sans">
+
+  <header class="sticky top-0 z-50 bg-white/70 backdrop-blur border-b">
+    <div class="max-w-7xl mx-auto px-4 flex h-16 items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="flex items-center gap-3">
+            <div class="h-9 w-9 grid place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16M12 4v16"/></svg>
+            </div>
+            <span class="text-xl font-bold">ReMind</span>
+        </a>
+      </div>
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+        <a href="index.html" class="hover:text-indigo-600">Home</a>
+        <a href="dashboard.html" class="text-indigo-600 font-bold">Dashboard</a>
+        <a href="cognitive.html" class="hover:text-indigo-600">Cognitive Tracker</a>
+        <a href="friends.html" class="hover:text-indigo-600">Friends</a>
+        <a href="contact.html" class="hover:text-indigo-600">Contact</a>
+        <a href="index.html" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm hover:bg-indigo-700 transition duration-150">Log Out</a>
+      </nav>
+      <button class="md:hidden text-slate-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="py-12">
+    <div class="max-w-7xl mx-auto px-4">
+      
+      <div class="flex justify-between items-end mb-8 border-b pb-4">
+        <h1 class="text-3xl font-bold text-slate-800">Welcome Back, User!</h1>
+        <button id="toggleFormButton" class="flex items-center space-x-2 px-4 py-2 bg-fuchsia-600 text-white rounded-xl shadow hover:bg-fuchsia-700 transition duration-150">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+          <span class="font-medium">New Reminder</span>
+        </button>
+      </div>
+
+      <div id="reminderForm" class="hidden-form mb-12 bg-white p-6 rounded-2xl shadow-xl border border-gray-200">
+        <h2 id="formTitle" class="text-2xl font-bold text-slate-800 mb-6">Create New Reminder</h2>
+        <form id="reminderFormElement" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Reminder Title</label>
+                <input type="text" id="title" placeholder="e.g., Send birthday wish to Sir Reginald Quackers"
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+            </div>
+            
+            <div>
+                <label for="date" class="block text-sm font-medium text-gray-700">Due Date</label>
+                <input type="date" id="date"
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+            </div>
+
+            <div>
+                <label for="priority" class="block text-sm font-medium text-gray-700">Priority Level</label>
+                <select id="priority"
+                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="time" class="block text-sm font-medium text-gray-700">Time (Optional)</label>
+                <input type="time" id="time"
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="description" class="block text-sm font-medium text-gray-700">Details / Description</label>
+                <textarea id="description" rows="3" placeholder="Add more context to your reminder..."
+                          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+            </div>
+
+            <div class="md:col-span-2 flex justify-end space-x-3">
+                <button type="button" id="cancelFormButton" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-xl shadow-sm hover:bg-gray-100 transition duration-150">
+                    Cancel
+                </button>
+                <button type="submit" id="saveReminderButton" class="px-6 py-2 border border-transparent rounded-xl shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                    Save Reminder
+                </button>
+            </div>
+        </form>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+          <p class="text-sm font-medium text-slate-500">Total Active Reminders</p>
+          <p id="totalRemindersCount" class="text-4xl font-extrabold text-indigo-600 mt-1">0</p>
+          <p class="text-sm text-slate-500 mt-2">Manage your entire task list.</p>
+        </div>
+        
+        <div id="completedCard" class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 transition duration-300 ease-in-out">
+          <p class="text-sm font-medium text-slate-500">Completed Today</p>
+          <p id="completedCount" class="text-4xl font-extrabold text-green-600 mt-1">0</p>
+          <p class="text-sm text-slate-500 mt-2">Great progress! Keep it up. ✨</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+          <p class="text-sm font-medium text-slate-500">Overdue Tasks</p>
+          <p id="overdueCount" class="text-4xl font-extrabold text-red-600 mt-1">3</p>
+          <p class="text-sm text-slate-500 mt-2">Time to catch up on these.</p>
+        </div>
+      </div>
+
+      <h2 class="text-2xl font-bold text-slate-800 mb-4">Upcoming Reminders</h2>
+      
+      <div id="upcomingRemindersList" class="bg-white rounded-2xl shadow-xl border border-gray-200 divide-y divide-gray-100">
+        
+        <div class="reminder-item flex items-center justify-between p-4 hover:bg-gray-50 transition duration-150"
+             data-title="File Q4 Tax Documents" data-date="2025-11-02" data-time="17:00" data-priority="high" data-completed="false">
+          <div class="flex items-center space-x-4">
+            <input type="checkbox" class="taskCheckbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+            <div class="flex items-center space-x-3 task-content">
+              <span class="h-3 w-3 rounded-full priority-dot-high flex-shrink-0"></span>
+              <div>
+                <p class="text-lg font-semibold text-slate-800">File Q4 Tax Documents</p>
+                <p class="text-sm text-slate-500">Due: <span class="text-red-600 font-medium">Today at 5:00 PM</span></p>
+              </div>
+            </div>
+          </div>
+          <button class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition editButton">Edit</button>
+        </div>
+
+        <div class="reminder-item flex items-center justify-between p-4 hover:bg-gray-50 transition duration-150"
+             data-title="Call Doodlebug McDoo" data-date="2025-11-03" data-time="10:00" data-priority="medium" data-completed="false">
+          <div class="flex items-center space-x-4">
+            <input type="checkbox" class="taskCheckbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+            <div class="flex items-center space-x-3 task-content">
+              <span class="h-3 w-3 rounded-full priority-dot-medium flex-shrink-0"></span>
+              <div>
+                <p class="text-lg font-semibold text-slate-800">Call Doodlebug McDoo</p>
+                <p class="text-sm text-slate-500">Due: Tomorrow at 10:00 AM</p>
+              </div>
+            </div>
+          </div>
+          <button class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition editButton">Edit</button>
+        </div>
+        
+        <div class="reminder-item flex items-center justify-between p-4 hover:bg-gray-50 transition duration-150"
+             data-title="Water the office plant" data-date="2025-11-05" data-time="" data-priority="low" data-completed="false">
+          <div class="flex items-center space-x-4">
+            <input type="checkbox" class="taskCheckbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+            <div class="flex items-center space-x-3 task-content">
+              <span class="h-3 w-3 rounded-full priority-dot-low flex-shrink-0"></span>
+              <div>
+                <p class="text-lg font-semibold text-slate-800">Water the office plant</p>
+                <p class="text-sm text-slate-500">Due: Wednesday</p>
+              </div>
+            </div>
+          </div>
+          <button class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition editButton">Edit</button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="py-12 border-t bg-white">
+    <div class="max-w-7xl mx-auto px-4 text-center text-sm text-slate-500">
+      <div class="flex justify-center mb-4">
+        <div class="h-8 w-8 grid place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16M12 4v16"/></svg>
+        </div>
+      </div>
+      <p class="text-xs">&copy; 2025 ReMind, Inc. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // --- DOM Elements ---
+    const reminderForm = document.getElementById('reminderForm');
+    const toggleFormButton = document.getElementById('toggleFormButton');
+    const cancelFormButton = document.getElementById('cancelFormButton');
+    const formElement = document.getElementById('reminderFormElement');
+    const formTitle = document.getElementById('formTitle');
+    const saveReminderButton = document.getElementById('saveReminderButton');
+    const upcomingRemindersList = document.getElementById('upcomingRemindersList');
+
+    const totalRemindersCountEl = document.getElementById('totalRemindersCount');
+    const completedCountEl = document.getElementById('completedCount');
+    const completedCardEl = document.getElementById('completedCard');
+    
+    let isEditMode = false;
+    let editingElement = null;
+
+    // --- Helpers ---
+
+    function formatDueDate(date, time) {
+        const dateObj = new Date(date + 'T00:00:00'); 
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+
+        today.setHours(0, 0, 0, 0);
+        tomorrow.setHours(0, 0, 0, 0);
+        dateObj.setHours(0, 0, 0, 0);
+        
+        let dateDisplay;
+        if (dateObj.getTime() === today.getTime()) {
+            dateDisplay = '<span class="text-red-600 font-medium">Today</span>';
+        } else if (dateObj.getTime() === tomorrow.getTime()) {
+            dateDisplay = 'Tomorrow';
+        } else {
+            dateDisplay = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        const timeDisplay = time ? ` at ${time}` : '';
+        return `Due: ${dateDisplay}${timeDisplay}`;
+    }
+
+    function getPriorityDotClass(priority) {
+        switch (priority) {
+            case 'high': return 'priority-dot-high';
+            case 'medium': return 'priority-dot-medium';
+            default: return 'priority-dot-low';
+        }
+    }
+
+    // --- Core Logic: Update Stats ---
+    function updateStatCards() {
+        const allReminders = upcomingRemindersList.querySelectorAll('.reminder-item');
+        let completedCount = 0;
+        let totalActiveCount = 0;
+        
+        allReminders.forEach(item => {
+            if (item.getAttribute('data-completed') === 'true') {
+                completedCount++;
+            } else {
+                totalActiveCount++;
+            }
+        });
+
+        // "Total Active Reminders" now shows ONLY active tasks (counts DOWN when you check a box)
+        totalRemindersCountEl.textContent = totalActiveCount;
+        
+        // "Completed Today" counts UP when you check a box
+        completedCountEl.textContent = completedCount;
+    }
+
+    // --- UI Logic ---
+
+    function resetFormState() {
+        formElement.reset();
+        isEditMode = false;
+        editingElement = null;
+        formTitle.textContent = 'Create New Reminder';
+        saveReminderButton.textContent = 'Save Reminder';
+    }
+
+    function toggleFormVisibility() {
+        const isHidden = reminderForm.classList.toggle('hidden-form');
+        if (isHidden) {
+            resetFormState();
+            toggleFormButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg><span class="font-medium">New Reminder</span>';
+        } else {
+            toggleFormButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg><span class="font-medium">Close Form</span>';
+        }
+    }
+
+    function createNewReminderElement(title, date, time, priority) {
+        const priorityDotClass = getPriorityDotClass(priority);
+        const dueDateHtml = formatDueDate(date, time);
+
+        const newReminderHtml = `
+            <div class="reminder-item flex items-center justify-between p-4 hover:bg-gray-50 transition duration-150"
+                 data-title="${title}" data-date="${date}" data-time="${time}" data-priority="${priority}" data-completed="false">
+                <div class="flex items-center space-x-4">
+                    <input type="checkbox" class="taskCheckbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                    <div class="flex items-center space-x-3 task-content">
+                        <span class="h-3 w-3 rounded-full ${priorityDotClass} flex-shrink-0"></span>
+                        <div>
+                            <p class="text-lg font-semibold text-slate-800">${title}</p>
+                            <p class="text-sm text-slate-500">${dueDateHtml}</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition editButton">Edit</button>
+            </div>
+        `;
+        upcomingRemindersList.insertAdjacentHTML('beforeend', newReminderHtml);
+    }
+
+    function updateExistingReminderElement(element, title, date, time, priority) {
+        element.setAttribute('data-title', title);
+        element.setAttribute('data-date', date);
+        element.setAttribute('data-time', time);
+        element.setAttribute('data-priority', priority);
+
+        const taskContent = element.querySelector('.task-content');
+        if (taskContent) {
+            taskContent.querySelector('.h-3.w-3.rounded-full').className = `h-3 w-3 rounded-full ${getPriorityDotClass(priority)} flex-shrink-0`;
+            taskContent.querySelector('.text-lg.font-semibold').textContent = title;
+            taskContent.querySelector('.text-sm.text-slate-500').innerHTML = formatDueDate(date, time);
+        }
+    }
+
+    function startEditMode(reminderElement) {
+        editingElement = reminderElement;
+        isEditMode = true;
+        const data = reminderElement.dataset;
+        document.getElementById('title').value = data.title;
+        document.getElementById('date').value = data.date;
+        document.getElementById('time').value = data.time || '';
+        document.getElementById('priority').value = data.priority;
+        formTitle.textContent = 'Edit Reminder';
+        saveReminderButton.textContent = 'Update Reminder';
+        if (reminderForm.classList.contains('hidden-form')) toggleFormVisibility();
+    }
+
+    // --- Event Handlers ---
+
+    function handleFormSubmission(event) {
+        event.preventDefault();
+        const title = document.getElementById('title').value;
+        const date = document.getElementById('date').value;
+        const time = document.getElementById('time').value;
+        const priority = document.getElementById('priority').value;
+
+        if (!title || !date) { alert("Please fill out title and date."); return; }
+
+        if (isEditMode && editingElement) {
+            updateExistingReminderElement(editingElement, title, date, time, priority);
+        } else {
+            createNewReminderElement(title, date, time, priority);
+        }
+        toggleFormVisibility();
+        updateStatCards();
+    }
+
+    function handleTaskCompletion(event) {
+        const checkbox = event.target;
+        if (checkbox.classList.contains('taskCheckbox')) {
+            const reminderItem = checkbox.closest('.reminder-item');
+            const isCompleted = checkbox.checked;
+            reminderItem.setAttribute('data-completed', isCompleted);
+
+            if (isCompleted) {
+                reminderItem.classList.add('completed-task');
+                // Trigger pulse animation
+                completedCardEl.classList.remove('stat-pulse-success');
+                void completedCardEl.offsetWidth; // Force reflow
+                completedCardEl.classList.add('stat-pulse-success');
+            } else {
+                reminderItem.classList.remove('completed-task');
+            }
+            updateStatCards();
+        }
+    }
+
+    function handleListClick(event) {
+        if (event.target.classList.contains('editButton')) {
+            startEditMode(event.target.closest('.reminder-item'));
+        } else if (event.target.classList.contains('taskCheckbox')) {
+            handleTaskCompletion(event);
+        }
+    }
+
+    toggleFormButton.addEventListener('click', toggleFormVisibility);
+    cancelFormButton.addEventListener('click', toggleFormVisibility);
+    formElement.addEventListener('submit', handleFormSubmission);
+    upcomingRemindersList.addEventListener('click', handleListClick);
+    document.addEventListener('DOMContentLoaded', updateStatCards);
+  </script>
+
+</body>
+</html>
